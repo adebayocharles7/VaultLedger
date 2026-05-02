@@ -92,6 +92,11 @@ class FolioController extends Controller
     public function withdraw(Request $request, Folio $folio): JsonResponse
     {
 
+        $validated = $request->validate([
+            'amount_minor' => 'required|integer|min:1',
+            'narration' => 'nullable|string|max:255',
+        ]);
+
         $this->authorize('update', $folio);
 
         try {
@@ -100,8 +105,8 @@ class FolioController extends Controller
                 $request->header('Idempotency-Key'),
                 fn () => $this->posting->withdraw(
                     $folio,
-                    $request->validated('amount_minor'),
-                    $request->validated('narration', 'Withdrawal')
+                    $validated['amount_minor'],
+                    $validated['narration'] ?? 'Withdrawal'
                 )
             );
 
@@ -147,7 +152,7 @@ class FolioController extends Controller
     /**
     * Helper method to format idempotent responses.
     */  
-    private function idempotentResponse(array $result, string $resourceClass, int $statusCode): JsonResponse   
+    private function idempotentResponse(array $result, string $resourceClass, int $status): JsonResponse   
     {
         if ($result['cached'] ?? false) {
             return response()->json(

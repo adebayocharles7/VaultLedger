@@ -2,7 +2,16 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Exceptions\WalletExceptions\FolioFrozenException;
+use App\Exceptions\WalletExceptions\InsufficientFundsException;
+use App\Exceptions\WalletExceptions\StaleVersionException;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RemittanceResource;
+use App\Models\Folio;
+use App\Models\Remittance;
+use App\Services\IdempotencyService;
+use App\Services\PostingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RemittanceController extends Controller
@@ -41,7 +50,7 @@ class RemittanceController extends Controller
         try {
             $wrappedResult = $this->idempotency->wrap(
                 $request->user()->id,
-                $request->header('Idempotency-Key', (string) \Str::uuid(),
+                $request->header('Idempotency-Key', (string) \Str::uuid()),
                 fn () => $this->posting->transfer(                    
                     source: $source,
                     destination: $destination,
@@ -54,27 +63,27 @@ class RemittanceController extends Controller
 
             return (new RemittanceResource($remittance))
                 ->response()
-                ->setStatusCode(201);
+                ->setStatusCode(201)
                 ->withHeaders( 
                    ($wrappedResult['cached'] ?? false) 
-                   ? ['X-Idempotent-Replay'] => 'true'
+                   ? ['X-Idempotent-Replay' => 'true']
                    : []
                 );
 
         } catch (InsufficientFundsException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'code' => 'INSUFFICIENT_FUNDS',
+                'code' => 'INSUFFICIENT_FUNDS'
             ], 422);
         } catch (FolioFrozenException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'code' => 'FOLIO_FROZEN',
+                'code' => 'FOLIO_FROZEN'
             ], 422);
         } catch (StaleVersionException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
-                'code' => 'CONCURRENT_MODIFICATION',
+                'code' => 'CONCURRENT_MODIFICATION'
             ], 409);
         }
     }

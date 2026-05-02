@@ -195,14 +195,16 @@ class PostingService
         }
 
         // Swap source and destination to undo the original flow.
-        return $this->transfer(
+        $counterRemittance = $this->transfer(
             source:      $remittance->destinationFolio,
             destination: $remittance->sourceFolio,
             amountMinor: $remittance->amount_minor,
             narration:   "REV: {$reason} (ref: {$remittance->id})"
-        )->tap(function () use ($remittance) {
-            $remittance->update(['status' => RemittanceStatus::REVERSED]);
-        });
+        );
+
+        $remittance->update(['status' => RemittanceStatus::REVERSED]);
+
+        return $counterRemittance;
     }
 
     // ──────────────────────────────────────────────
