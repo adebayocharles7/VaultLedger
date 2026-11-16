@@ -2,14 +2,21 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
+//use Illuminate\Console\Attributes\Description;
+//use Illuminate\Console\Attributes\Signature;
+
+use App\Models\Folio;
 use Illuminate\Console\Command;
 
-#[Signature('app:reconcile-wallet-balances')]
-#[Description('Command description')]
+//#[Signature('app:reconcile-wallet-balances')]
+//#[Description('Command description')]
+
 class ReconcileWalletBalances extends Command
 {
+
+    protected $signature   = 'vaultledger:reconcile {--dry-run : Report discrepancies without fixing them}';
+    protected $description = 'Verify that stored Folio balances match their double-entry ledger totals.';
+
     /**
      * Execute the console command.
      */
