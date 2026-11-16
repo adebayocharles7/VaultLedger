@@ -20,8 +20,8 @@ Route::prefix('v1')->group(function () {
  
     // ── Authentication (public) ───────────────────────────────────────────
     Route::prefix('auth')->middleware('throttle:10,1')->group(function () {
-        Route::post('register', [AuthController::class, 'register']);
-        Route::post('login',    [AuthController::class, 'login']);
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login',    [AuthController::class, 'login']);
     });
  
     // ── Authenticated routes ──────────────────────────────────────────────
@@ -32,7 +32,7 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/me',      [AuthController::class, 'me']);
  
         // ── Folios (Wallets) ──────────────────────────────────────────────
-        Route::post('folios',                           [FolioController::class, 'store']);
+        Route::post('/folios',                           [FolioController::class, 'store']);
         Route::get('folios/{folio}',                    [FolioController::class, 'show']);
         Route::post('folios/{folio}/fund',              [FolioController::class, 'fund']);
         Route::post('folios/{folio}/withdraw',          [FolioController::class, 'withdraw']);
